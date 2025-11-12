@@ -15,20 +15,24 @@ tickers = {
 
 for nome, simbolo in tickers.items():
     try:
-        dados = yf.download(simbolo, period="5d")
-        if not dados.empty:
+        # Método MAIS CONFIÁVEL
+        ticker = yf.Ticker(simbolo)
+        dados = ticker.history(period="5d")
+        
+        if not dados.empty and len(dados) > 1:
             preco_atual = dados['Close'].iloc[-1]
             preco_anterior = dados['Close'].iloc[-2]
             variacao = ((preco_atual - preco_anterior) / preco_anterior) * 100
             
             st.metric(
-                label=nome,
+                label=f"{nome} ({simbolo})",
                 value=f"${preco_atual:.2f}",
                 delta=f"{variacao:.2f}%"
             )
         else:
-            st.error(f"Sem dados: {nome}")
-    except:
-        st.error(f"Erro: {nome}")
+            st.error(f"Sem dados suficientes: {nome}")
+            
+    except Exception as e:
+        st.error(f"Erro em {nome}: {str(e)}")
 
-st.info("📊 Dashboard funcionando perfeitamente!")
+st.success("✅ Dashboard carregado com sucesso!")
